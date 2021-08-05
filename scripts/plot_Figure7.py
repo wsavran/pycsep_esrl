@@ -1,6 +1,5 @@
 # 3rd party impoorts
 import numpy as np
-import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 
 # local imports
@@ -30,38 +29,38 @@ def initalize_forecasts(config, **kwargs):
 # 1) Basemap
 
 Projection = ccrs.Mercator()   # Uses cartopy to define a projection
-extent = [6, 19, 34, 49]          # [min(lon), max(lon), min(lat), max(lat)]
+extent = [5, 20, 34, 49]          # [min(lon), max(lon), min(lat), max(lat)]
 
 # Basemap can be defined using a predefined str, which can be looked up in the csep.utils.plots.plot_basemap()
-# documentation (e.g. stamen_terrain, google-satellite, ESRI_terrain, etc.), or a Tile Map Server URL
-# (ESRI Hillshade in here).
-basemap = 'https://services.arcgisonline.com/arcgis/rest/services/' \
-          'Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}.jpg'
+# documentation (e.g. stamen_terrain, google-satellite, ESRI_terrain, etc.)
+
+basemap = 'stamen_terrain-background'
 
 # Create an 'ax' object containing the basemap
 ax = plot_basemap(basemap, extent,
-                    projection=Projection,
-                    coastline=True,
-                    borders=True,
-                    linewidth=0.4,
-                    linecolor='gray',
-                    grid=True,
-                    grid_labels=True)
-ax.get_figure().savefig('../figures/Figure7_a.png', dpi=200, transparent=True)
+                  projection=Projection,
+                  figsize=(7, 7),
+                  coastline=True,
+                  borders=True,
+                  linewidth=0.4,
+                  linecolor='gray',
+                  grid=True,
+                  grid_labels=True,
+                  grid_fontsize=8)
+ax.get_figure().savefig('../figures/Figure7_a.png', dpi=300, transparent=True)
 
 # 2) Spatial Dataset
-
 print('Loading Italy Forecasts')
-# Get forecasts and their properties
+# # Get forecasts and their properties
 ita_fores = initalize_forecasts(italy_experiment, swap_latlon=True)
 ita_region = ita_fores['werner'].region
 ita_mw_bins = ita_fores['werner'].get_magnitudes()
 
 # Post-process the forecasts into a desired value.
-# Here, we want to see the difference between two forecasts within a given magnitude range
+# Here, we want to see the ratio between two forecasts within a given magnitude range
 
 # Filter the forecasts into a defined magnitude range
-low_bound = 5.55
+low_bound = 5.25
 upper_bound = 5.95
 mw_ind = np.where(np.logical_and(ita_mw_bins >= low_bound, ita_mw_bins <= upper_bound))[0]
 
@@ -81,31 +80,35 @@ args = {'cmap': 'coolwarm',
         'alpha': 0.6,
         'clim': (-2, 2),
         'clabel': colormap_title,
+        'clabel_fontsize': 12,
+        'cticks_fontsize': 8,
         'region_border': False,
         'linewidth': 0.4}
 ## Plot the spatial dataset, using the previously defined basemap 'ax' as argument.
 ax = plot_spatial_dataset(rate_diff_cartesian, ita_region, ax=ax, extent=extent, plot_args=args)
-ax.get_figure().savefig('../figures/Figure7_b.png', dpi=200, transparent=True)
+ax.get_figure().savefig('../figures/Figure7_b.png', dpi=300, transparent=True)
 
-
-# 3) Cata;pg
+# 3) Catalog
 
 # Load the observation catalog
 ita_cat = load_catalog(italy_experiment.evaluation_catalog, loader=italy_experiment.catalog_loader)
 # Filter by the magnitude range
 ita_cat.filter([f'magnitude >= {low_bound}',f'magnitude <= {upper_bound}'])
+
 cat_mags = ita_cat.get_magnitudes()
 # Plot arguments
 args = {'alpha': 0.5,
-        'markercolor': 'gray',
+        'markercolor': 'black',
         'legend': True,
-        'legend_loc': 3,
-        'mag_ticks': [min(cat_mags), max(cat_mags)],
-        'markersize': 0.01,
-        'mag_scale': 14,
+        'legend_title': r'$M_w$',
+        'legend_loc': 4,
+        'mag_ticks': np.array([5.3, 5.6, 5.9]),
+        'legend_framealpha': 0.5,
+        'legend_fontsize' : 8,
+        'legend_titlesize' : 14,
+        'markersize': 0.5,
+        'mag_scale': 10,
         'linewidth': 0.4}
 # Plot the catalog, using the previously obtained spatial_dataset 'ax' object as argument
 ax = plot_catalog(ita_cat, ax=ax, extent=extent, plot_args=args)
-ax.get_figure().savefig('../figures/Figure7_c.png', dpi=200, transparent=True)
-
-
+ax.get_figure().savefig('../figures/Figure7_c.png', dpi=300, transparent=True)
