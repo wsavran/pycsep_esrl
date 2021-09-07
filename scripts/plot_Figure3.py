@@ -87,7 +87,7 @@ for p in perc:
 fig = plt.figure(figsize=(18,10))
 axs = []
 for i, idx in enumerate(idxs):
-    axs.append(fig.add_subplot(2,2,i+1, projection=ccrs.PlateCarree()))
+    axs.append(fig.add_subplot(2,2,i+1, projection=ccrs.Mercator()))
 fig.subplots_adjust(wspace=-0.175, hspace=0.2)
 args_dict = {
     'legend': True,
