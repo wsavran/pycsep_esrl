@@ -22,26 +22,20 @@ from csep.core.catalogs import CSEPCatalog
 from csep.core.forecasts import GriddedDataSet
 from csep.core.catalog_evaluations import spatial_test, number_test
 from csep.utils.constants import SECONDS_PER_WEEK
-from csep.utils.plots import plot_spatial_dataset, plot_number_test, plot_spatial_test
+from csep.utils.plots import plot_spatial_dataset, plot_number_test, plot_spatial_test, plot_catalog
 from csep.utils.scaling_relationships import WellsAndCoppersmith
 from csep.utils.time_utils import epoch_time_to_utc_datetime, datetime_to_utc_epoch
-
-# local imports
-from experiment_utilities import california_experiment, italy_experiment
-
 
 def sort_by_longitude(coords):
     return coords[coords[:,0].argsort()]
 
 # file-path for results
-sim_name = '2019_09_04-ComCatM7p1_ci38457511_ShakeMapSurfaces'
-simulation_dir = f'/Users/wsavran/Research/ridgecrest_evaluation_bssa/{sim_name}'
-results_dir = f'/Users/wsavran/Research/ridgecrest_evaluation_bssa/updated_analysis/ucerf3-ridgecrest/{sim_name}'
+simulation_dir = f'../forecasts/ucerf3_forecast'
+results_dir = f'../data/'
 ucerf3_raw_data = os.path.join(simulation_dir, 'results_complete.bin')
 m71_event = os.path.join(simulation_dir, 'm71_event.json')
-ucerf3_config = os.path.join(results_dir, 'config.json')
+ucerf3_config = os.path.join(simulation_dir, 'config.json')
 catalog_fname = os.path.join(results_dir, 'evaluation_catalog.json')
-n_test_result_fname = os.path.join(results_dir, 'results/n-test_mw_2p5.json')
 
 # magnitude range
 min_mw = 2.5
@@ -84,8 +78,6 @@ filters = [
     f'magnitude >= {min_mw}'
 ]
 
-print('Before filtering observation catalog')
-print(catalog)
 print('After filtering observation catalog')
 catalog = catalog.filter(filters).filter_spatial(region=smr)
 catalog = catalog.apply_mct(event.magnitude, event_epoch)
@@ -105,39 +97,50 @@ u3etas_forecast = load_catalog_forecast(
 )
 
 # evaluate forecasting model
+print('computing spatial test results')
+s_test = spatial_test(u3etas_forecast, catalog)
+
 print('computing number test results')
 n_test = number_test(u3etas_forecast, catalog)
-print('computing spatial test results')
-s_test = spatial_test(u3etas_forecast, catalog, verbose=False)
 
 # plot the results
-plot_number_test(n_test, show=False, plot_args={'title': ''})
-plot_spatial_test(s_test, show=False, plot_args={'title':''}))
+ax = plot_number_test(
+    n_test,
+    show=False, 
+    plot_args={
+        'title': '',
+        'xlabel_fontsize': 14,
+        'ylabel_fontsize': 14
+    })
 ax.get_figure().savefig('../figures/Figure5b.png', dpi=300)
+ax = plot_spatial_test(s_test, 
+    show=False, 
+    plot_args={
+        'title': '',
+        'xlabel_fontsize': 14,
+        'ylabel_fontsize': 14
+    })
 ax.get_figure().savefig('../figures/Figure5c.png', dpi=300)
-
-
-# compares the test distribution computed here and from the old manuscript
 
 # plot forecast 
 plot_args = {
-    'projection': ccrs.PlateCarree(),
+    'projection': ccrs.Mercator(),
     'legend': True,
     'legend_loc': 1,
-    'grid_fontsize': 12,
+    'grid_fontsize': 16,
+    'cmap': 'viridis',
+    'grid_labels': True,
     'frameon': True,
     'mag_ticks': [2.5, 3.0, 3.5, 4.0],
-    'markercolor': 'gray',
+    'markercolor': 'red',
+    'clabel_fontsize': 16,
+    'title': '',
     'legend_titlesize': 16,
-    'legend_fontsize': 12,
+    'legend_fontsize': 14,
     'mag_scale': 5,
-    'catalog': catalog,
-    'edgecolor': 'black'
 }
-ax = u3etas_forecast.plot(show=True, plot_args=plot_args)
+ax = u3etas_forecast.plot(plot_args=plot_args)
+ax = plot_catalog(catalog, plot_args=plot_args, ax=ax, show=True)
 ax.get_figure().savefig('../figures/Figure5a.png', dpi=300)
-
-
-
 
 

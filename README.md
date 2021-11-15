@@ -1,4 +1,4 @@
-# pycsep_esrl
+# Reproducibility Package for pyCSEP Electronic Seismologist 
 Scripts and data to generate figures for pyCSEP eSRL manuscript 
 
 # Re-create figures

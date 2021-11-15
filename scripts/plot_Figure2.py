@@ -1,4 +1,3 @@
-# Python imports
 import time
 
 # 3rd party impoorts
@@ -8,6 +7,7 @@ import cartopy.crs as ccrs
 
 # pycsep imports
 from csep import load_gridded_forecast, load_catalog
+from csep.utils.plots import add_labels_for_publication
 
 # local imports
 from experiment_utilities import california_experiment, italy_experiment
@@ -62,23 +62,53 @@ print('Plotting...')
 args_dict = {
     'basemap': 'ESRI_terrain',
     'grid_labels': True,
+    'clabel': None,
     'borders': True,
     'feature_lw': 0.5,
-    'cmap': 'rainbow',
-    'alpha_exp': 0.8,
+    'cmap': 'viridis',
+    'clim': [-4, 0],
+    'projection': 'fast',
     'markersize': 2,
-    'markercolor': 'black',
-    'alpha': 0.4,
-    'mag_scale': 8,
+    'markercolor': 'red',
+    'grid_fontsize': 14,
+    'alpha': 0.9,
+    'mag_scale': 7.7,
+    'clabel_fontsize': 14,
+    'legend_borderpad': 0.7,
+    'legend_titlesize': 14,
+    'legend_fontsize': 14,
     'legend': True,
     'legend_loc': 3
 }
 ax1 = ca_fore.plot(ax=ax1, plot_args=args_dict)
+args_dict['alpha'] = 0.5
 ax1 = ca_cat.plot(ax=ax1, plot_args=args_dict)
 ax1.set_title('')
 
+
+args_dict = {
+    'basemap': 'ESRI_terrain',
+    'grid_labels': True,
+    'borders': True,
+    'feature_lw': 0.5,
+    'cmap': 'viridis',
+    'clim': [-4, 0],
+    'projection': 'fast',
+    'markersize': 2,
+    'markercolor': 'red',
+    'grid_fontsize': 14,
+    'alpha': 0.9,
+    'clabel_fontsize': 14,
+    'mag_scale': 8,
+    'legend_fontsize': 14,
+    'legend_titlesize': 14,
+    'legend': True,
+    'legend_loc': 3
+}
 ax2 = ita_fore.plot(ax=ax2, plot_args=args_dict)
+args_dict['alpha'] = 0.5
 ax2 = ita_cat.plot(ax=ax2, plot_args=args_dict)
 ax2.set_title('')
+add_labels_for_publication(fig)
 fig.savefig('../figures/figure2.png', dpi=300)
 plt.show()

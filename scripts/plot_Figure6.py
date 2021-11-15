@@ -9,7 +9,7 @@ import cartopy.crs as ccrs
 # pycsep imports
 from csep import load_gridded_forecast, load_catalog
 from csep import poisson_evaluations as poisson
-from csep.utils.plots import plot_comparison_test
+from csep.utils.plots import plot_comparison_test, add_labels_for_publication
 
 # local imports
 from experiment_utilities import california_experiment, italy_experiment
@@ -42,6 +42,7 @@ benchmark = ca_fores.pop(california_experiment.t_test_benchmark)
 
 print(f'Computing t-test results...')
 for name, fore in ca_fores.items():
+    fore.name = fore.name.upper()
     california_t_results.append(poisson.paired_t_test(fore, benchmark, cat))
     california_w_results.append(poisson.w_test(fore, benchmark, cat))
 
@@ -63,26 +64,34 @@ print(cat)
 
 print(f'Computing t-test results...')
 for name, fore in ita_fores.items():
+    fore.name = fore.name.upper()
     italy_t_results.append(poisson.paired_t_test(fore, benchmark, cat))
     italy_w_results.append(poisson.w_test(fore, benchmark, cat))
-
 
 # plotting code below
 fig, (ax1, ax2) = plt.subplots(1,2, figsize=(12,5))
 args = {
     'figsize':(6,8),
     'xlabel': '',
-    'ylabel': 'Information Gain',
     'linewidth': 1.5,
     'capsize': 0,
     'title': '',
+    'xlabel_fontsize': 12,
+    'ylabel_fontsize': 14,
+    'ylabel': 'Information Gain per Eq.',
     'markersize': 6,
-    'xlim': [-0.5, 1.5]
+    'xlim': [-0.5, 1.5],
+    'xticklabels_rotation': 45
 }
 
 ax1 = plot_comparison_test(california_t_results, california_w_results, plot_args=args, axes=ax1)
+
+# args['ylabel'] = ''
 ax2 = plot_comparison_test(italy_t_results, italy_w_results, plot_args=args, axes=ax2)
+add_labels_for_publication(fig)
+fig.tight_layout()
 fig.savefig('../figures/Figure6.png', dpi=300)
 plt.show()
+
 
 

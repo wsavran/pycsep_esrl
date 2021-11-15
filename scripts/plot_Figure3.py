@@ -21,7 +21,7 @@ from csep.core.regions import (
 )
 from csep.core.forecasts import GriddedDataSet
 from csep.utils.constants import SECONDS_PER_WEEK
-from csep.utils.plots import plot_spatial_dataset
+from csep.utils.plots import plot_spatial_dataset, plot_catalog, add_labels_for_publication
 from csep.utils.scaling_relationships import WellsAndCoppersmith
 from csep.utils.time_utils import epoch_time_to_utc_datetime
 
@@ -66,40 +66,54 @@ u3etas_forecast = load_catalog_forecast(
     ucerf3_raw_data,
     start_time = epoch_time_to_utc_datetime(start_epoch),
     end_time = epoch_time_to_utc_datetime(end_epoch),
+    filters = [f'magnitude >= {min_mw}', f'origin_time >= {start_epoch}', f'origin_time < {end_epoch}'],
     region=smr,
     event=event,
     type='ucerf3',
     filter_spatial=True,
-    apply_filters=True,
+    apply_filters=True
 )
 
 # plot forecast; will add catalog to plot, calling first because u3etas is a generator and not subscriptable
-_ = u3etas_forecast.get_expected_rates()
+_ = u3etas_forecast.get_expected_rates(verbose=True)
 
 # determine catalogs with percentile counts
 ecs = u3etas_forecast.get_event_counts()
-idxs = []
+catalogs = []
 for p in perc:
     ec = np.percentile(ecs, p)
-    idxs.append(np.argwhere(ecs == ec)[0])
+    idx = int(np.argwhere(ecs == ec)[0])
+    catalogs.append(u3etas_forecast.catalogs[idx])
 
 # plotting goes here
 fig = plt.figure(figsize=(18,10))
 axs = []
-for i, idx in enumerate(idxs):
+for i in range(len(catalogs)):
     axs.append(fig.add_subplot(2,2,i+1, projection=ccrs.Mercator()))
-fig.subplots_adjust(wspace=-0.175, hspace=0.2)
+fig.subplots_adjust(wspace=-0.39, hspace=0.2)
+
 args_dict = {
+    'basemap': 'ESRI_terrain',
     'legend': True,
     'legend_loc': 1,
+    'projection': 'fast',
+    'cmap': 'viridis',
     'frameon': True,
+    'grid_labels': True,
+    'grid_fontsize': 14,
+    'cmap': 'viridis',
     'mag_ticks': [4.0, 5.0, 6.0, 7.0],
     'mag_scale': 6,
-    'markercolor': 'gray',
-    'legend_titlesize': 12
+    'markercolor': 'red',
+    'clabel': None,
+    'legend_titlesize': 14
 }
-for ax, idx in zip(axs, idxs):
-    args_dict['catalog'] = u3etas_forecast.catalogs[int(idx)]
-    h = u3etas_forecast.plot(plot_args=args_dict, ax=ax)
+
+for i, (ax, cat) in enumerate(zip(axs, catalogs)):
+    if i == 3:
+        args_dict.pop('clabel', None)
+    h = u3etas_forecast.expected_rates.plot(plot_args=args_dict, ax=ax)
+    h = plot_catalog(cat, plot_args=args_dict, ax=h)
+add_labels_for_publication(fig)
 ax.get_figure().savefig('../figures/figure3.png', dpi=300)
 plt.show()

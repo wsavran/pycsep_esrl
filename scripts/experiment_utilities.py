@@ -139,8 +139,6 @@ california_experiment.forecasts = {
 california_experiment.seed = 123456
 california_experiment.t_test_benchmark = 'helmstetter'
 
-
-
 # configuration for italian testing region
 italy_experiment = EvaluationConfig()
 italy_experiment.start_time = strptime_to_utc_datetime('2010-01-01 00:00:00.0')
@@ -150,7 +148,7 @@ italy_experiment.catalog_loader = load_italian_catalog
 italy_experiment.forecasts = {
     'lombardi': '../forecasts/lombardi.DBM.italy.5yr.2010-01-01.dat',
     'meletti': '../forecasts/meletti.MPS04.italy.5yr.2010-01-01.dat',
-    'werner': '../forecasts/werner.HiResSmoSeis-m1.italy.5yr.2010-01-01.dat'
+    'werner-m1': '../forecasts/werner.HiResSmoSeis-m1.italy.5yr.2010-01-01.dat'
 }
 italy_experiment.seed = 123456
 italy_experiment.t_test_benchmark = 'meletti'
